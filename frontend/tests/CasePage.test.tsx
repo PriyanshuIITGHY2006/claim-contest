@@ -307,6 +307,16 @@ describe("case page tabs", () => {
     expect(screen.getByTestId("verdict-board")).toBeTruthy()
   })
 
+  it("puts the finished result first and folds the agent's steps below it", async () => {
+    render(await call({ analysis: "an_1" }))
+
+    const board = screen.getByTestId("verdict-board")
+    const steps = screen.getByTestId("agent-steps")
+    expect(board.compareDocumentPosition(steps) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+    expect(steps.tagName).toBe("DETAILS")
+    expect(steps.querySelector("[data-testid='live-timeline']")).not.toBeNull()
+  })
+
   it("asks the timeline to refresh the page when the run is still going", async () => {
     api.getAnalysis.mockResolvedValue({ ...doneAnalysis, status: "running", verdicts: [] })
 

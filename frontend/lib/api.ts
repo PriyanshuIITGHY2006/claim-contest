@@ -343,6 +343,13 @@ export interface CaseDraft {
   bill_lines: BillLine[]
   letter_text: string
   warnings: string[]
+  /** Read from labelled lines ("Patient:", "Hospital:", admission/discharge dates); null when not stated. */
+  patient_name?: string | null
+  hospital?: string | null
+  admitted?: string | null
+  discharged?: string | null
+  sum_insured?: number | null
+  room_rent_per_day?: number | null
 }
 
 /** The confirmed case sent to `POST /cases`. */
@@ -361,6 +368,35 @@ export interface NewCase {
 
 export function listDocuments(): Promise<DocumentSummary[]> {
   return request<DocumentSummary[]>("backend", "/documents")
+}
+
+/** The (possibly edited) letter as a branded PDF, rendered by the backend; returns the file. */
+export async function letterPdf(title: string, markdown: string): Promise<Blob> {
+  const path = "/letters/pdf"
+  const url = `${baseUrl("backend")}${path}`
+  let response: Response
+  try {
+    response = await fetch(url, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ title, markdown }),
+      cache: "no-store",
+      signal: AbortSignal.timeout(UPLOAD_TIMEOUT_MS),
+    })
+  } catch (error) {
+    throw new ApiError("backend", null, `Could not reach the backend service at ${url}`, error)
+  }
+  if (!response.ok) {
+    const detail = await readDetail(response)
+    throw new ApiError(
+      "backend",
+      response.status,
+      `The backend service answered ${response.status} for ${path}${detail ? `: ${detail}` : ""}`,
+      undefined,
+      detail,
+    )
+  }
+  return response.blob()
 }
 
 export function uploadDocuments(settlementPdf: File, billPdf: File, docId: string): Promise<CaseDraft> {

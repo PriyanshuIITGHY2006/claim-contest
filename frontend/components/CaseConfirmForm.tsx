@@ -137,7 +137,7 @@ function totalsProblems(lines: LineRow[], deductions: DeductionRow[], claimed: s
 }
 
 /** Details the backend needs that a PDF rarely gives; checked when the user submits. */
-function missingDetails(details: Details, lines: LineRow[]): string[] {
+function missingDetails(details: Details, lines: LineRow[], deductions: DeductionRow[]): string[] {
   const out: string[] = []
   const required: [string, string][] = [
     ["Patient name", details.patientName],
@@ -157,6 +157,13 @@ function missingDetails(details: Details, lines: LineRow[]): string[] {
   if (details.admitted && details.discharged && details.discharged < details.admitted) {
     out.push("Discharged on cannot be before Admitted on")
   }
+  if (details.inception && details.admitted && details.inception >= details.admitted) {
+    out.push("Policy start date must be before Admitted on")
+  }
+  // Without its bill lines the calculators cannot price a deduction, and the agent cannot settle it.
+  deductions.forEach((deduction, index) => {
+    if (deduction.line_ids.length === 0) out.push(`Link deduction ${index + 1} to the bill lines it covers`)
+  })
   if (toNumber(details.claimed) === null) out.push("Claimed amount is required")
   if (toNumber(details.approved) === null) out.push("Approved amount is required")
   lines.forEach((line, index) => {
@@ -441,16 +448,16 @@ export function CaseConfirmForm({ draft, submitting, error, onSubmit }: CaseConf
   const [lines, setLines] = useState<LineRow[]>(() => draft.bill_lines.map(toLineRow))
   const [deductions, setDeductions] = useState<DeductionRow[]>(() => draft.deductions.map(toDeductionRow))
   const [details, setDetails] = useState<Details>({
-    patientName: "",
+    patientName: draft.patient_name ?? "",
     patientAge: "",
-    hospital: "",
-    admitted: "",
-    discharged: "",
+    hospital: draft.hospital ?? "",
+    admitted: draft.admitted ?? "",
+    discharged: draft.discharged ?? "",
     diagnosis: "",
-    sumInsured: "",
+    sumInsured: text(draft.sum_insured),
     inception: "",
     eligibleRent: "",
-    chargedRent: "",
+    chargedRent: text(draft.room_rent_per_day),
     claimed: text(draft.claimed),
     approved: text(draft.approved),
   })
@@ -500,7 +507,7 @@ export function CaseConfirmForm({ draft, submitting, error, onSubmit }: CaseConf
 
   function handleSubmit(event: { preventDefault: () => void }) {
     event.preventDefault()
-    const issues = missingDetails(details, lines)
+    const issues = missingDetails(details, lines, deductions)
     setMissing(issues)
     if (issues.length === 0 && problems.length === 0) {
       onSubmit(buildCase(draft.doc_id, draft.letter_text, details, lines, deductions))

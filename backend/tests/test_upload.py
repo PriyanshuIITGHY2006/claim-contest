@@ -110,7 +110,8 @@ def test_the_letter_gives_claimed_approved_and_deductions() -> None:
     assert draft.approved == 161616.27
     assert [(d.deduction_id, d.amount) for d in draft.deductions] == [("D1", 12000.0), ("D2", 2000.0)]
     assert draft.deductions[0].label == "Room rent beyond eligibility deducted"
-    assert all(d.line_ids == [] for d in draft.deductions)
+    # Room rent links to the room line; a generic non-payable deduction has no non-medical line here.
+    assert [d.line_ids for d in draft.deductions] == [["L01"], []]
     assert "Room rent beyond eligibility deducted Rs 12,000" in draft.letter_text
 
 
@@ -474,3 +475,87 @@ def test_duplicate_deduction_ids_are_rejected() -> None:
     deduction = _new_case()["deductions"][0]
     second = deduction | {"label": "Other deduction", "amount": 1000}
     assert _create(deductions=[deduction, second]).status_code == 422
+
+
+def test_labelled_details_are_pre_filled_and_the_room_line_gets_a_daily_rate() -> None:
+    """Patient, hospital, dates and sum insured come from labelled lines; room rent per day from the room line."""
+    letter = (
+        "Insured patient: Ananya Bora (fictional)\n"
+        "Policy: Family Health Optima, sum insured Rs. 5,00,000\n"
+        "Hospital: Synthetic City Hospital, Guwahati\n"
+        "Date of admission: 12/09/2026\n"
+        "Date of discharge: 15/09/2026\n"
+        "Amount claimed: Rs. 1,12,500.00\n"
+    )
+    bill = (
+        "Admitted: 12/09/2026    Discharged: 15/09/2026\n"
+        "12/09/2026 Twin sharing room rent 13,500.00\n"
+        "12/09/2026 Nursing charges 3,000.00\n"
+    )
+    draft = _draft(letter=letter, bill=bill)
+    assert draft.patient_name == "Ananya Bora (fictional)"
+    assert draft.hospital == "Synthetic City Hospital, Guwahati"
+    assert draft.admitted == date(2026, 9, 12)
+    assert draft.discharged == date(2026, 9, 15)
+    assert draft.sum_insured == 500000.0
+    assert draft.room_rent_per_day == 4500.0
+    room = draft.bill_lines[0]
+    assert (room.rate, room.units, room.amount) == (4500.0, 3, 13500.0)
+
+
+def test_details_stay_empty_when_the_documents_do_not_state_them() -> None:
+    """Nothing is invented: unlabelled documents leave the details for the user."""
+    draft = _draft(letter="Claim settled\n", bill="Room rent 8,000.00\n")
+    assert (draft.patient_name, draft.hospital, draft.admitted, draft.discharged) == (None, None, None, None)
+    assert draft.sum_insured is None and draft.room_rent_per_day is None
+
+
+def test_deductions_are_linked_to_the_bill_lines_their_label_covers() -> None:
+    """Room rent, associated expenses, other expenses and named non-payable items each get their lines."""
+    letter = (
+        "Room rent beyond eligibility (deducted) Rs. 12,000.00\n"
+        "Proportionate deduction - associated medical expenses (deducted) Rs. 44,250.00\n"
+        "Proportionate deduction - other expenses (deducted) Rs. 40,719.76\n"
+        "Non-payable items - documentation charges (deducted) Rs. 800.00\n"
+    )
+    bill = (
+        "03/08/2026 Deluxe room rent 32,000.00\n"
+        "03/08/2026 Nursing charges 3,000.00\n"
+        "03/08/2026 Surgeon fee 45,000.00\n"
+        "04/08/2026 OT charges 30,000.00\n"
+        "04/08/2026 Drug-eluting stent 39,186.03\n"
+        "04/08/2026 Guide wire and balloon catheter 18,500.00\n"
+        "03/08/2026 Pharmacy - medicines 21,400.00\n"
+        "03/08/2026 Blood investigations 7,800.00\n"
+        "03/08/2026 Admission kit 1,200.00\n"
+        "03/08/2026 Documentation charges 800.00\n"
+    )
+    draft = _draft(letter=letter, bill=bill)
+    links = {d.deduction_id: d.line_ids for d in draft.deductions}
+    assert links == {
+        "D1": ["L01"],
+        "D2": ["L02", "L03", "L04"],
+        "D3": ["L05", "L06", "L07", "L08"],
+        "D4": ["L10"],
+    }
+    assert "Check the bill lines linked to each deduction" in draft.warnings
+
+
+def test_a_generic_non_payable_deduction_links_every_non_medical_line() -> None:
+    draft = _draft(
+        letter="Non-payable items (deducted) Rs. 2,000.00\n",
+        bill="03/08/2026 Admission kit 1,200.00\n03/08/2026 Documentation charges 800.00\n03/08/2026 Surgeon fee 5,000.00\n",
+    )
+    assert draft.deductions[0].line_ids == ["L01", "L02"]
+
+
+def test_case_a_as_pdfs_is_linked_like_the_sample_case() -> None:
+    """Case A rebuilt as two text PDFs links exactly as data/cases/case_a.json does."""
+    sample = json.loads((BACKEND_DIR.parent / "data" / "cases" / "case_a.json").read_text())
+    deductions = sample["settlement"]["deductions"]
+    letter = [f"{d['label']} (deducted) Rs. {d['amount']:,.2f}" for d in deductions]
+    bill = [f"{line['date']} {line['particulars']} {line['amount']:,.2f}" for line in sample["bill"]["lines"]]
+    response = _upload(_pdf(letter), _pdf(bill))
+    assert response.status_code == 200
+    linked = [d["line_ids"] for d in response.json()["deductions"]]
+    assert linked == [d["line_ids"] for d in deductions]

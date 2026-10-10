@@ -133,6 +133,34 @@ describe("CaseConfirmForm", () => {
     expect(body.approved).toBe(65000)
   })
 
+  function fillDetails(inception = "2021-06-01") {
+    change("Patient name", "Asha Rao")
+    change("Patient age", "44")
+    change("Hospital", "City Hospital")
+    change("Admitted on", "2026-08-03")
+    change("Discharged on", "2026-08-07")
+    change("Diagnosis", "Appendicitis")
+    change("Sum insured", "500000")
+    change("Policy start date", inception)
+  }
+
+  it("does not submit until every deduction is linked to a bill line, and says why", () => {
+    const onSubmit = renderForm(filledDraft)
+    fillDetails()
+    fireEvent.click(analyse())
+    expect(onSubmit).not.toHaveBeenCalled()
+    expect(screen.getByText(/Link deduction 1 to the bill lines it covers/)).toBeTruthy()
+  })
+
+  it("does not submit when the policy starts after the admission", () => {
+    const onSubmit = renderForm(filledDraft)
+    fillDetails("2026-10-01")
+    fireEvent.click(screen.getByRole("checkbox", { name: "Link deduction 1 to line 1" }))
+    fireEvent.click(analyse())
+    expect(onSubmit).not.toHaveBeenCalled()
+    expect(screen.getByText(/Policy start date must be before Admitted on/)).toBeTruthy()
+  })
+
   it("does not submit while required details are missing", () => {
     const onSubmit = renderForm(filledDraft)
     fireEvent.click(analyse())
@@ -145,5 +173,33 @@ describe("CaseConfirmForm", () => {
     )
     expect(screen.getByText("Your documents are processed on this server and not shared.")).toBeTruthy()
     expect(screen.getByRole("alert").textContent).toContain("Choose one of the listed policies")
+  })
+})
+
+describe("CaseConfirmForm pre-filled details", () => {
+  it("starts from the details read from the documents", () => {
+    render(
+      <CaseConfirmForm
+        draft={{
+          ...filledDraft,
+          patient_name: "Ananya Bora",
+          hospital: "Synthetic City Hospital",
+          admitted: "2026-09-12",
+          discharged: "2026-09-15",
+          sum_insured: 500000,
+          room_rent_per_day: 4500,
+        }}
+        submitting={false}
+        error={null}
+        onSubmit={vi.fn()}
+      />,
+    )
+    const value = (label: string) => (screen.getByLabelText(label) as HTMLInputElement).value
+    expect(value("Patient name")).toBe("Ananya Bora")
+    expect(value("Hospital")).toBe("Synthetic City Hospital")
+    expect(value("Admitted on")).toBe("2026-09-12")
+    expect(value("Discharged on")).toBe("2026-09-15")
+    expect(value("Sum insured")).toBe("500000")
+    expect(value("Room rent charged per day")).toBe("4500")
   })
 })

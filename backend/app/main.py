@@ -14,6 +14,7 @@ from app.routes.cases import router as cases_router
 from app.routes.checks import router as checks_router
 from app.routes.documents import router as documents_router
 from app.routes.eval import router as eval_router
+from app.routes.letters import router as letters_router
 from app.routes.precedents import router as precedents_router
 from app.routes.rules import router as rules_router
 from app.routes.upload import router as upload_router
@@ -46,6 +47,7 @@ app.include_router(calc_router)
 app.include_router(checks_router)
 app.include_router(analyses_router)
 app.include_router(eval_router)
+app.include_router(letters_router)
 
 
 @app.get("/health")

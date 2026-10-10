@@ -155,12 +155,24 @@ export default async function CasePage({ params, searchParams }: CasePageProps) 
 
       {tab === "analysis" && (
         <div className="space-y-6">
-          {saved ? (
-            <SavedResultNote finishedAt={analysis.finished_at} />
-          ) : (
-            <LiveTimeline analysisId={requestedId} refreshOnDone={analysis.status === "running"} />
-          )}
+          {saved && <SavedResultNote finishedAt={analysis.finished_at} />}
           {analysis.status === "done" && <VerdictBoard caseData={caseData} analysis={analysis} />}
+          {/* Once the result is in, it comes first; the agent's steps stay one click away. */}
+          {!saved &&
+            (analysis.status === "done" ? (
+              <details data-testid="agent-steps" className="group rounded-2xl border border-slate-200 bg-white shadow-sm">
+                <summary className="cursor-pointer list-none px-5 py-4 text-sm font-semibold text-slate-800 marker:hidden">
+                  <span className="text-teal-700 group-open:hidden">Show </span>
+                  <span className="hidden text-teal-700 group-open:inline">Hide </span>
+                  how the agent reached this: every search, quote check and calculation
+                </summary>
+                <div className="px-2 pb-2">
+                  <LiveTimeline analysisId={requestedId} refreshOnDone={false} />
+                </div>
+              </details>
+            ) : (
+              <LiveTimeline analysisId={requestedId} refreshOnDone={analysis.status === "running"} />
+            ))}
         </div>
       )}
       {tab === "xray" && (

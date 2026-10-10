@@ -7,6 +7,7 @@ const api = vi.hoisted(() => ({
   requestDraft: vi.fn(),
   approveDraft: vi.fn(),
   calcDeadlines: vi.fn(),
+  letterPdf: vi.fn(),
 }))
 
 vi.mock("@/lib/api", async () => {
@@ -185,6 +186,32 @@ describe("ActionCentre: letter, timeline and exports", () => {
     expect(md).toContain("Tier 1 letter (en)")
     expect(ics).toContain("DTSTART;VALUE=DATE:20270807")
     expect((ics ?? "").split("BEGIN:VEVENT").length - 1).toBe(1)
+    click.mockRestore()
+  })
+
+  it("downloads the edited letter as a branded PDF rendered by the backend", async () => {
+    const created: Blob[] = []
+    vi.stubGlobal("URL", {
+      ...URL,
+      createObjectURL: vi.fn((blob: Blob) => {
+        created.push(blob)
+        return "blob:x"
+      }),
+      revokeObjectURL: vi.fn(),
+    })
+    const click = vi.spyOn(HTMLAnchorElement.prototype, "click").mockImplementation(() => {})
+    const pdf = new Blob(["%PDF-1.7"], { type: "application/pdf" })
+    api.letterPdf.mockResolvedValue(pdf)
+    renderCentre()
+    await prepareTier1()
+    fireEvent.change(screen.getByLabelText("Letter"), { target: { value: "My edited letter" } })
+
+    fireEvent.click(screen.getByRole("button", { name: /Download PDF/ }))
+
+    await screen.findByText("PDF downloaded.")
+    expect(api.letterPdf).toHaveBeenCalledWith("Insurer grievance letter (tier 1)", "My edited letter")
+    expect(created).toEqual([pdf])
+    expect(click).toHaveBeenCalledTimes(1)
     click.mockRestore()
   })
 

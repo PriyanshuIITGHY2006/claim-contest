@@ -1,13 +1,14 @@
 "use client"
 
 import { useState } from "react"
-import { CalendarPlus, Copy, Download, FileText, Lock, TriangleAlert } from "lucide-react"
+import { CalendarPlus, Copy, Download, FileDown, FileText, Lock, TriangleAlert } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import {
   ApiError,
   approveDraft,
   calcDeadlines,
+  letterPdf,
   requestDraft,
   type DeadlineStep,
   type Draft,
@@ -15,6 +16,7 @@ import {
   type DraftTier,
 } from "@/lib/api"
 import { buildIcs, deadlineEvents } from "@/lib/ics"
+import { LetterPreview } from "@/components/LetterPreview"
 
 interface ActionCentreProps {
   analysisId: string
@@ -45,8 +47,8 @@ const formatDate = (iso: string) => DATE.format(new Date(`${iso.slice(0, 10)}T00
 
 const messageOf = (error: unknown, fallback: string) => (error instanceof ApiError ? error.message : fallback)
 
-function saveFile(name: string, type: string, content: string) {
-  const url = URL.createObjectURL(new Blob([content], { type }))
+function saveFile(name: string, type: string, content: string | Blob) {
+  const url = URL.createObjectURL(typeof content === "string" ? new Blob([content], { type }) : content)
   const link = document.createElement("a")
   link.href = url
   link.download = name
@@ -68,6 +70,22 @@ export function ActionCentre({ analysisId, caseTitle, decisionDate, deadlines }:
   const [sentOn, setSentOn] = useState("")
   const [steps, setSteps] = useState<DeadlineStep[]>(deadlines)
   const [stepsError, setStepsError] = useState<string | null>(null)
+
+  const [pdfBusy, setPdfBusy] = useState(false)
+
+  async function downloadPdf() {
+    setPdfBusy(true)
+    setError(null)
+    try {
+      const title = `${TIERS.find((entry) => entry.tier === tier)?.title ?? "Grievance"} letter (tier ${tier})`
+      saveFile(`grievance-tier-${tier}.pdf`, "application/pdf", await letterPdf(title, letter))
+      setStatus("PDF downloaded.")
+    } catch (failure) {
+      setError(messageOf(failure, "The PDF could not be prepared."))
+    } finally {
+      setPdfBusy(false)
+    }
+  }
 
   async function prepare(nextTier: DraftTier, nextLanguage: DraftLanguage) {
     setBusy(true)
@@ -234,6 +252,10 @@ export function ActionCentre({ analysisId, caseTitle, decisionDate, deadlines }:
                   <Copy aria-hidden="true" />
                   Copy
                 </Button>
+                <Button type="button" size="sm" disabled={pdfBusy} onClick={() => void downloadPdf()}>
+                  <FileDown aria-hidden="true" />
+                  {pdfBusy ? "Preparing PDF…" : "Download PDF"}
+                </Button>
                 <Button type="button" variant="outline" size="sm" onClick={() => saveFile(`grievance-tier-${tier}.md`, "text/markdown", letter)}>
                   <Download aria-hidden="true" />
                   Download .md
@@ -250,9 +272,7 @@ export function ActionCentre({ analysisId, caseTitle, decisionDate, deadlines }:
                 className="w-full rounded-xl border border-slate-300 p-3 font-mono text-sm leading-relaxed"
               />
             ) : (
-              <pre data-testid="letter-preview" className="whitespace-pre-wrap break-words rounded-xl border border-slate-200 bg-white p-4 font-sans text-sm leading-relaxed text-slate-800">
-                {letter}
-              </pre>
+              <LetterPreview markdown={letter} />
             )}
 
             <p data-testid="action-status" aria-live="polite" className="min-h-5 text-sm text-slate-600">

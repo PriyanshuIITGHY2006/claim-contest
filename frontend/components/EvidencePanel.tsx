@@ -12,6 +12,7 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet"
 import { StatusChip } from "@/components/StatusChip"
+import { WhyVerdict } from "@/components/WhyVerdict"
 import { formatINR } from "@/lib/format"
 import { getRule, type BillLine, type CalcResult, type Citation, type Deduction, type Verdict } from "@/lib/api"
 
@@ -177,7 +178,9 @@ export function EvidencePanel({ deduction, verdict, billLines, onClose }: Eviden
               </div>
             )}
 
-            <Section title="Why">
+            <WhyVerdict deduction={deduction} verdict={verdict} />
+
+            <Section title="The agent's reasoning">
               <p className="text-sm text-slate-700">{verdict.reasoning}</p>
             </Section>
 

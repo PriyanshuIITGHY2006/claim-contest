@@ -210,6 +210,12 @@ class CaseDraft(BaseModel):
     bill_lines: list[BillLine]
     letter_text: str
     warnings: list[str]
+    patient_name: str | None = None
+    hospital: str | None = None
+    admitted: date | None = None
+    discharged: date | None = None
+    sum_insured: float | None = None
+    room_rent_per_day: float | None = None
 
 
 class NewCase(BaseModel):

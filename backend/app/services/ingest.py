@@ -39,6 +39,12 @@ _CLAIMED_WORD = re.compile(r"\bclaimed\b", re.IGNORECASE)
 _APPROVED_WORD = re.compile(r"\bapproved\b", re.IGNORECASE)
 _ADMISSION_WORD = re.compile(r"\badmi(?:ssion|tted|t)\b", re.IGNORECASE)
 _EDGE_PUNCTUATION = " \t:|,-–"
+_PATIENT = re.compile(r"^(?:insured\s+patient|patient(?:'s)?\s+name|patient|insured)\s*:\s*(?P<value>.+)$", re.IGNORECASE)
+_HOSPITAL = re.compile(r"^hospital(?:\s+name)?\s*:\s*(?P<value>.+)$", re.IGNORECASE)
+_SUM_INSURED = re.compile(
+    r"sum\s+insured\D{0,20}?(?:Rs\.?|₹|INR)?\s*(?P<value>\d[\d,]*(?:\.\d{1,2})?)", re.IGNORECASE
+)
+_DISCHARGE_WORD = re.compile(r"\bdischarg", re.IGNORECASE)
 
 _DATE = re.compile(
     r"(?<!\d)(?:"
@@ -231,21 +237,119 @@ def _letter_amounts(lines: list[str]) -> tuple[float | None, float | None, list[
     return claimed, approved, deductions
 
 
+# What the policy's own wording puts under each proportionate-deduction label.
+_ASSOCIATED = {
+    BillCategory.nursing,
+    BillCategory.professional_fee,
+    BillCategory.ot,
+    BillCategory.procedure,
+}
+_OTHER = {BillCategory.implant, BillCategory.consumables, BillCategory.pharmacy, BillCategory.diagnostics}
+_GENERIC_WORDS = {
+    "charges", "charge", "items", "item", "deducted", "deduction", "non", "payable", "not",
+    "and", "the", "of", "for", "fee", "fees", "expenses", "other", "others", "rs",
+}
+_WORD = re.compile(r"[a-z]+")
+
+
+def _specific_words(text: str) -> set[str]:
+    return {word for word in _WORD.findall(text.lower()) if word not in _GENERIC_WORDS and len(word) > 2}
+
+
+def _suggest_lines(label: str, lines: list[BillLine]) -> list[str]:
+    """Bill lines a deduction label most likely covers; the user confirms them in the form."""
+    text = label.lower()
+
+    def having(categories: set[BillCategory]) -> list[str]:
+        return [line.line_id for line in lines if line.category in categories]
+
+    if "proportionate" in text and "associated" in text:
+        return having(_ASSOCIATED)
+    if "proportionate" in text and "other" in text:
+        return having(_OTHER)
+    if "room rent" in text and "proportionate" not in text:
+        return having({BillCategory.room})
+    if _DEDUCTION_WORD.search(text):
+        # "Non-payable items - documentation charges" names its items after the dash.
+        named = _specific_words(label.split(" - ", 1)[1]) if " - " in label else set()
+        if named:
+            return [line.line_id for line in lines if named & _specific_words(line.particulars)]
+        if "payable" in text:
+            return having({BillCategory.non_medical})
+    words = _specific_words(label)
+    return [line.line_id for line in lines if words and words & _specific_words(line.particulars)]
+
+
+def _labelled(lines: list[str], pattern: re.Pattern[str]) -> str | None:
+    """The value after the first ``Label:`` line matching ``pattern``."""
+    for line in lines:
+        match = pattern.match(line)
+        if match and _clean(match["value"]):
+            return _clean(match["value"])
+    return None
+
+
+def _discharge_date(lines: list[str]) -> date | None:
+    """The first date written after the word "discharge" on a line."""
+    for line in lines:
+        word = _DISCHARGE_WORD.search(line)
+        if word:
+            after = [value for value, (start, _end) in _find_dates(line) if start > word.start()]
+            if after:
+                return after[0]
+    return None
+
+
+def _sum_insured(lines: list[str]) -> float | None:
+    for line in lines:
+        match = _SUM_INSURED.search(line)
+        if match:
+            return float(match["value"].replace(",", ""))
+    return None
+
+
+def _with_daily_room_rate(
+    lines: list[BillLine], admitted: date | None, discharged: date | None
+) -> tuple[list[BillLine], float | None]:
+    """Split the first room line into a daily rate x nights when that reproduces its amount exactly."""
+    if admitted is None or discharged is None or discharged <= admitted:
+        return lines, None
+    nights = (discharged - admitted).days
+    for index, line in enumerate(lines):
+        if line.category != BillCategory.room:
+            continue
+        per_day = round(line.amount / nights, 2)
+        if abs(per_day * nights - line.amount) > 0.01:
+            return lines, None
+        updated = line.model_copy(update={"rate": per_day, "units": nights})
+        return [*lines[:index], updated, *lines[index + 1 :]], per_day
+    return lines, None
+
+
 def build_draft(doc_id: str, letter_text: str, bill_text: str) -> CaseDraft:
     """Pre-fill a ``CaseDraft`` from the text of the settlement letter and the bill."""
     letter_lines = [line.strip() for line in letter_text.splitlines() if line.strip()]
     bill_lines = [line.strip() for line in bill_text.splitlines() if line.strip()]
 
     claimed, approved, deductions = _letter_amounts(letter_lines)
-    lines = _bill_lines(bill_lines, _admission_date(letter_lines + bill_lines))
+    all_lines = letter_lines + bill_lines
+    admitted = _admission_date(all_lines)
+    discharged = _discharge_date(all_lines)
+    lines, room_rent_per_day = _with_daily_room_rate(_bill_lines(bill_lines, admitted), admitted, discharged)
+
+    deductions = [
+        deduction.model_copy(update={"line_ids": _suggest_lines(deduction.label, lines)}) for deduction in deductions
+    ]
 
     warnings: list[str] = []
     if claimed is None:
         warnings.append("Could not find the claimed amount in the letter")
     if approved is None:
         warnings.append("Could not find the approved amount in the letter")
-    if deductions:
+    if any(not deduction.line_ids for deduction in deductions):
         warnings.append("Link each deduction to the bill lines it covers")
+    elif deductions:
+        warnings.append("Check the bill lines linked to each deduction")
     else:
         warnings.append("No deduction found in the letter; add them below")
     if lines:
@@ -261,4 +365,10 @@ def build_draft(doc_id: str, letter_text: str, bill_text: str) -> CaseDraft:
         bill_lines=lines,
         letter_text=letter_text,
         warnings=warnings,
+        patient_name=_labelled(all_lines, _PATIENT),
+        hospital=_labelled(all_lines, _HOSPITAL),
+        admitted=admitted,
+        discharged=discharged,
+        sum_insured=_sum_insured(all_lines),
+        room_rent_per_day=room_rent_per_day,
     )

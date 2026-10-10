@@ -14,6 +14,8 @@ import {
   TriangleAlert,
   type LucideIcon,
 } from "lucide-react"
+import { AgentProgress } from "@/components/AgentProgress"
+import { friendlyStep } from "@/lib/agentSteps"
 import { agentEventsUrl, type AgentEvent } from "@/lib/api"
 
 interface LiveTimelineProps {
@@ -131,6 +133,7 @@ export function LiveTimeline({ analysisId, refreshOnDone }: LiveTimelineProps) {
       className="space-y-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-6"
     >
       <h2 className="text-base font-semibold text-slate-900">What the agent did</h2>
+      <AgentProgress events={events} running={state === "running"} />
 
       <ol className="relative">
         {events.map((event, index) => {
@@ -151,6 +154,9 @@ export function LiveTimeline({ analysisId, refreshOnDone }: LiveTimelineProps) {
               <StepDot event={event} active={active} animate={!reduceMotion} />
               <div className="min-w-0 flex-1 space-y-1.5 pt-1 text-sm">
                 <p className="leading-snug text-slate-800">{event.message}</p>
+                {friendlyStep(toolName(event.data)) && event.type !== "tool_result" && (
+                  <p className="text-xs leading-snug text-slate-500">{friendlyStep(toolName(event.data))}</p>
+                )}
                 <EventChips event={event} />
               </div>
             </motion.li>

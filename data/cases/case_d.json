@@ -1,0 +1,171 @@
+{
+  "case_id": "case_d",
+  "title": "Kept waiting 5.5 hours for discharge, then charged for it",
+  "synthetic_notice": "SYNTHETIC - FOR TESTING. Fictional people, hospital and amounts.",
+  "policy": {
+    "doc_id": "hdfc_optima_secure",
+    "file": "data/myoptima-secure---cis-pww.pdf",
+    "product": "my:Optima Secure",
+    "uin": null,
+    "version": null,
+    "schedule": {
+      "sum_insured": 1000000,
+      "inception_date": "2022-03-10"
+    }
+  },
+  "patient": {
+    "name": "Meena Saikia (fictional)",
+    "age": 47
+  },
+  "admission": {
+    "hospital": "Synthetic Ortho Centre, Guwahati (SYN-0004)",
+    "admitted": "2026-07-20T07:30:00",
+    "discharged": "2026-07-23T17:00:00",
+    "diagnosis": "Fracture shaft of femur - ORIF",
+    "room_category": "Single private room",
+    "cashless": true
+  },
+  "bill": {
+    "lines": [
+      {
+        "line_id": "L01",
+        "date": "2026-07-20",
+        "particulars": "Single private room",
+        "category": "room",
+        "rate": 6000,
+        "units": 3,
+        "amount": 18000
+      },
+      {
+        "line_id": "L02",
+        "date": "2026-07-20",
+        "particulars": "Nursing charges",
+        "category": "nursing",
+        "rate": 1500,
+        "units": 3,
+        "amount": 4500
+      },
+      {
+        "line_id": "L03",
+        "date": "2026-07-21",
+        "particulars": "Orthopaedic surgeon fee",
+        "category": "professional_fee",
+        "rate": 40000,
+        "units": 1,
+        "amount": 40000
+      },
+      {
+        "line_id": "L04",
+        "date": "2026-07-21",
+        "particulars": "OT charges",
+        "category": "ot",
+        "rate": 25000,
+        "units": 1,
+        "amount": 25000
+      },
+      {
+        "line_id": "L05",
+        "date": "2026-07-20",
+        "particulars": "Pharmacy - medicines",
+        "category": "pharmacy",
+        "rate": 15800,
+        "units": 1,
+        "amount": 15800
+      },
+      {
+        "line_id": "L06",
+        "date": "2026-07-20",
+        "particulars": "X-ray and investigations",
+        "category": "diagnostics",
+        "rate": 6900,
+        "units": 1,
+        "amount": 6900
+      },
+      {
+        "line_id": "L07",
+        "date": "2026-07-23",
+        "particulars": "Room retention after discharge advice (half day)",
+        "category": "room",
+        "rate": 3000,
+        "units": 1,
+        "amount": 3000
+      },
+      {
+        "line_id": "L08",
+        "date": "2026-07-23",
+        "particulars": "Nursing - retention after discharge advice",
+        "category": "nursing",
+        "rate": 750,
+        "units": 1,
+        "amount": 750
+      }
+    ],
+    "total": 113950
+  },
+  "settlement": {
+    "claimed": 113950,
+    "total_deducted": 3750,
+    "deductions": [
+      {
+        "deduction_id": "D1",
+        "label": "Charges beyond discharge advice",
+        "amount": 3750,
+        "line_ids": [
+          "L07",
+          "L08"
+        ],
+        "insurer_reason": "Charges incurred after discharge advice are not payable"
+      }
+    ],
+    "letter_text": "Final approval granted. Deduction: charges beyond discharge advice are not payable as per policy terms.",
+    "approved": 110200
+  },
+  "timeline": [
+    {
+      "event": "cashless_request",
+      "at": "2026-07-20T08:00:00"
+    },
+    {
+      "event": "cashless_decision",
+      "at": "2026-07-20T10:15:00"
+    },
+    {
+      "event": "discharge_request",
+      "at": "2026-07-23T11:00:00"
+    },
+    {
+      "event": "final_authorisation",
+      "at": "2026-07-23T16:30:00"
+    }
+  ],
+  "expected": [
+    {
+      "deduction_id": "D1",
+      "status": "contestable",
+      "recoverable": 3750,
+      "basis": [
+        "MC24-16a",
+        "MC24-16b"
+      ],
+      "note": "Final authorisation 5h30m after request; extra hospital charges are borne by the insurer"
+    },
+    {
+      "deduction_id": "TAT_CASHLESS",
+      "status": "contestable",
+      "recoverable": 0,
+      "basis": [
+        "MC24-15b"
+      ],
+      "note": "Cashless decision took 2h15m against a one-hour limit (breach recorded; no separate amount)"
+    },
+    {
+      "deduction_id": "LETTER",
+      "status": "contestable",
+      "recoverable": 0,
+      "basis": [
+        "MC24-17b"
+      ],
+      "note": "Letter cites 'policy terms' without a specific clause"
+    }
+  ]
+}

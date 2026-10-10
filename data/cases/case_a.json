@@ -1,0 +1,271 @@
+{
+  "case_id": "case_a",
+  "title": "Room-rent cut spread to pharmacy, stent and tests",
+  "synthetic_notice": "SYNTHETIC - FOR TESTING. Fictional people, hospital and amounts.",
+  "policy": {
+    "doc_id": "star_fho_v19",
+    "file": "data/01-FHO-Insurance-policy-wordings.pdf",
+    "product": "Family Health Optima Insurance Plan",
+    "uin": "SHAHLIP23164V072223",
+    "version": "POL / FHO / V.19 / 2023",
+    "schedule": {
+      "sum_insured": 500000,
+      "inception_date": "2021-06-01",
+      "eligible_room_rent_per_day": 5000
+    }
+  },
+  "patient": {
+    "name": "Ramesh Kalita (fictional)",
+    "age": 58
+  },
+  "admission": {
+    "hospital": "Synthetic Heart Institute, Guwahati (SYN-0001)",
+    "admitted": "2026-08-03T09:30:00",
+    "discharged": "2026-08-07T12:00:00",
+    "diagnosis": "Coronary artery disease - PTCA with one stent",
+    "room_category": "Deluxe single room (Rs 8,000/day)",
+    "cashless": true
+  },
+  "bill": {
+    "lines": [
+      {
+        "line_id": "L01",
+        "date": "2026-08-03",
+        "particulars": "Deluxe room rent (inclusive of nursing)",
+        "category": "room",
+        "rate": 8000,
+        "units": 4,
+        "amount": 32000
+      },
+      {
+        "line_id": "L02",
+        "date": "2026-08-03",
+        "particulars": "Cardiologist consultation",
+        "category": "professional_fee",
+        "rate": 2500,
+        "units": 4,
+        "amount": 10000
+      },
+      {
+        "line_id": "L03",
+        "date": "2026-08-04",
+        "particulars": "Surgeon fee - PTCA",
+        "category": "professional_fee",
+        "rate": 45000,
+        "units": 1,
+        "amount": 45000
+      },
+      {
+        "line_id": "L04",
+        "date": "2026-08-04",
+        "particulars": "Anaesthetist fee",
+        "category": "professional_fee",
+        "rate": 8000,
+        "units": 1,
+        "amount": 8000
+      },
+      {
+        "line_id": "L05",
+        "date": "2026-08-04",
+        "particulars": "Cath lab / OT charges",
+        "category": "ot",
+        "rate": 30000,
+        "units": 1,
+        "amount": 30000
+      },
+      {
+        "line_id": "L06",
+        "date": "2026-08-04",
+        "particulars": "PTCA procedure charges",
+        "category": "procedure",
+        "rate": 25000,
+        "units": 1,
+        "amount": 25000
+      },
+      {
+        "line_id": "L07",
+        "date": "2026-08-04",
+        "particulars": "Drug-eluting stent",
+        "category": "implant",
+        "rate": 39186.03,
+        "units": 1,
+        "amount": 39186.03
+      },
+      {
+        "line_id": "L08",
+        "date": "2026-08-04",
+        "particulars": "Guide wire and balloon catheter",
+        "category": "consumables",
+        "rate": 18500,
+        "units": 1,
+        "amount": 18500
+      },
+      {
+        "line_id": "L09",
+        "date": "2026-08-03",
+        "particulars": "Pharmacy - medicines",
+        "category": "pharmacy",
+        "rate": 21400,
+        "units": 1,
+        "amount": 21400
+      },
+      {
+        "line_id": "L10",
+        "date": "2026-08-04",
+        "particulars": "Pharmacy - contrast and IV fluids",
+        "category": "pharmacy",
+        "rate": 6200,
+        "units": 1,
+        "amount": 6200
+      },
+      {
+        "line_id": "L11",
+        "date": "2026-08-03",
+        "particulars": "Echocardiography",
+        "category": "diagnostics",
+        "rate": 3500,
+        "units": 1,
+        "amount": 3500
+      },
+      {
+        "line_id": "L12",
+        "date": "2026-08-03",
+        "particulars": "Blood investigations",
+        "category": "diagnostics",
+        "rate": 7800,
+        "units": 1,
+        "amount": 7800
+      },
+      {
+        "line_id": "L13",
+        "date": "2026-08-04",
+        "particulars": "Coronary angiography imaging",
+        "category": "diagnostics",
+        "rate": 12000,
+        "units": 1,
+        "amount": 12000
+      },
+      {
+        "line_id": "L14",
+        "date": "2026-08-03",
+        "particulars": "Admission kit",
+        "category": "non_medical",
+        "rate": 1200,
+        "units": 1,
+        "amount": 1200
+      },
+      {
+        "line_id": "L15",
+        "date": "2026-08-03",
+        "particulars": "Documentation charges",
+        "category": "non_medical",
+        "rate": 800,
+        "units": 1,
+        "amount": 800
+      }
+    ],
+    "total": 260586.03
+  },
+  "settlement": {
+    "claimed": 260586.03,
+    "total_deducted": 98969.76,
+    "deductions": [
+      {
+        "deduction_id": "D1",
+        "label": "Room rent beyond eligibility",
+        "amount": 12000,
+        "line_ids": [
+          "L01"
+        ],
+        "insurer_reason": "Room rent restricted to Rs 5,000 per day as per policy"
+      },
+      {
+        "deduction_id": "D2",
+        "label": "Proportionate deduction - associated medical expenses",
+        "amount": 44250.0,
+        "line_ids": [
+          "L02",
+          "L03",
+          "L04",
+          "L05",
+          "L06"
+        ],
+        "insurer_reason": "Proportionate deduction as per policy terms"
+      },
+      {
+        "deduction_id": "D3",
+        "label": "Proportionate deduction - other expenses",
+        "amount": 40719.76,
+        "line_ids": [
+          "L07",
+          "L08",
+          "L09",
+          "L10",
+          "L11",
+          "L12",
+          "L13"
+        ],
+        "insurer_reason": "Proportionate deduction as per policy terms"
+      },
+      {
+        "deduction_id": "D4",
+        "label": "Non-payable items",
+        "amount": 2000,
+        "line_ids": [
+          "L14",
+          "L15"
+        ],
+        "insurer_reason": "Non-payable items"
+      }
+    ],
+    "letter_text": "Claim approved with deductions: room rent beyond eligibility; proportionate deduction as per policy terms; non-payable items.",
+    "approved": 161616.27
+  },
+  "timeline": [],
+  "expected": [
+    {
+      "deduction_id": "D1",
+      "status": "valid",
+      "recoverable": 0,
+      "basis": [
+        "policy:room_limit_table"
+      ]
+    },
+    {
+      "deduction_id": "D2",
+      "status": "valid",
+      "recoverable": 0,
+      "basis": [
+        "policy:proportionate_note"
+      ],
+      "note": "Ratio 5000/8000 = 0.625; associated expenses 118000"
+    },
+    {
+      "deduction_id": "D3",
+      "status": "contestable",
+      "recoverable": 40719.76,
+      "basis": [
+        "policy:associated_expenses_definition"
+      ],
+      "note": "Exempt heads total 108586.03; policy excludes pharmacy, consumables, implants and diagnostics from associated medical expenses"
+    },
+    {
+      "deduction_id": "D4",
+      "status": "valid",
+      "recoverable": 0,
+      "basis": [
+        "policy:subsumed_into_room_charges"
+      ],
+      "note": "Admission kit and documentation charges are listed as subsumed into room charges"
+    },
+    {
+      "deduction_id": "LETTER",
+      "status": "contestable",
+      "recoverable": 0,
+      "basis": [
+        "MC24-17b"
+      ],
+      "note": "Letter does not reference specific policy terms"
+    }
+  ]
+}

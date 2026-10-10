@@ -1,0 +1,134 @@
+{
+  "case_id": "case_b",
+  "title": "Rejected for non-disclosure after 7 years of cover",
+  "synthetic_notice": "SYNTHETIC - FOR TESTING. Fictional people, hospital and amounts.",
+  "policy": {
+    "doc_id": "star_fho_v19",
+    "file": "data/01-FHO-Insurance-policy-wordings.pdf",
+    "product": "Family Health Optima Insurance Plan",
+    "uin": "SHAHLIP23164V072223",
+    "version": "POL / FHO / V.19 / 2023",
+    "schedule": {
+      "sum_insured": 500000,
+      "inception_date": "2019-04-01",
+      "continuous_coverage": true,
+      "eligible_room_rent_per_day": 5000
+    }
+  },
+  "patient": {
+    "name": "Anjali Bora (fictional)",
+    "age": 61
+  },
+  "admission": {
+    "hospital": "Synthetic City Hospital, Guwahati (SYN-0002)",
+    "admitted": "2026-09-02T22:10:00",
+    "discharged": "2026-09-07T11:00:00",
+    "diagnosis": "Ischaemic stroke; history of hypertension",
+    "room_category": "Single standard AC room",
+    "cashless": false
+  },
+  "bill": {
+    "lines": [
+      {
+        "line_id": "L01",
+        "date": "2026-09-02",
+        "particulars": "Single standard AC room",
+        "category": "room",
+        "rate": 4500,
+        "units": 5,
+        "amount": 22500
+      },
+      {
+        "line_id": "L02",
+        "date": "2026-09-02",
+        "particulars": "Nursing charges",
+        "category": "nursing",
+        "rate": 1200,
+        "units": 5,
+        "amount": 6000
+      },
+      {
+        "line_id": "L03",
+        "date": "2026-09-03",
+        "particulars": "Neurologist fees",
+        "category": "professional_fee",
+        "rate": 3000,
+        "units": 5,
+        "amount": 15000
+      },
+      {
+        "line_id": "L04",
+        "date": "2026-09-02",
+        "particulars": "MRI brain",
+        "category": "diagnostics",
+        "rate": 9500,
+        "units": 1,
+        "amount": 9500
+      },
+      {
+        "line_id": "L05",
+        "date": "2026-09-02",
+        "particulars": "Blood investigations",
+        "category": "diagnostics",
+        "rate": 6400,
+        "units": 1,
+        "amount": 6400
+      },
+      {
+        "line_id": "L06",
+        "date": "2026-09-02",
+        "particulars": "Pharmacy - medicines",
+        "category": "pharmacy",
+        "rate": 28600,
+        "units": 1,
+        "amount": 28600
+      },
+      {
+        "line_id": "L07",
+        "date": "2026-09-03",
+        "particulars": "Thrombolysis procedure",
+        "category": "procedure",
+        "rate": 22000,
+        "units": 1,
+        "amount": 22000
+      }
+    ],
+    "total": 110000
+  },
+  "settlement": {
+    "claimed": 110000,
+    "total_deducted": 110000,
+    "deductions": [
+      {
+        "deduction_id": "D1",
+        "label": "Claim repudiated",
+        "amount": 110000,
+        "line_ids": [
+          "L01",
+          "L02",
+          "L03",
+          "L04",
+          "L05",
+          "L06",
+          "L07"
+        ],
+        "insurer_reason": "Repudiated for non-disclosure of pre-existing hypertension diagnosed in 2017, within the moratorium period of eight years as per policy condition 12"
+      }
+    ],
+    "letter_text": "Your claim is repudiated due to non-disclosure of pre-existing hypertension (diagnosed 2017) at proposal stage. As per policy condition 12, the moratorium period is eight continuous years, which is not completed.",
+    "approved": 0
+  },
+  "timeline": [],
+  "expected": [
+    {
+      "deduction_id": "D1",
+      "status": "contestable",
+      "recoverable": 110000,
+      "basis": [
+        "MC24-13",
+        "IPR24-S3-8"
+      ],
+      "note": "Coverage from 2019-04-01 to admission 2026-09-02 exceeds 60 months; regulation overrides the policy's eight-year wording; no fraud alleged"
+    }
+  ]
+}

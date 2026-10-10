@@ -1,0 +1,62 @@
+# Key clauses of the policy wordings in data/, used as test fixtures for clause search and
+# quote verification. `quote` is verbatim as it reads in the PDF. The PDFs are two-column
+# layouts, so extraction must be column-aware before matching; normalise with NFKC
+# (the PDFs use the "ﬁ" ligature), whitespace and curly quotes.
+
+policies:
+  star_fho_v19:
+    file: data/01-FHO-Insurance-policy-wordings.pdf
+    product: Family Health Optima Insurance Plan
+    uin: SHAHLIP23164V072223
+    version: POL / FHO / V.19 / 2023
+    anchors:
+      - id: room_limit_table
+        heading: "A. Room, Boarding, Nursing Expenses"
+        quote: >-
+          Room, Boarding, Nursing Expenses all inclusive as provided by the Hospital / Nursing
+          Home as per the limits given below;
+        facts: "Sum insured Rs 3,00,000 to Rs 5,00,000: Upto 5,000/- per day. Rs 10,00,000 and above: Single Standard A/C Room. Rs 1,00,000 to 2,00,000: Upto 2,000/- per day."
+      - id: proportionate_note
+        heading: "Note under A. Room, Boarding, Nursing Expenses"
+        quote: >-
+          Expenses relating to Associated medical expenses will be considered in proportion to
+          the eligible room rent/room category stated in the policy schedule or actuals
+          whichever is less. Proportionate deductions are not applied in respect of the
+          hospitals which do not follow differential billing or for those expenses in respect
+          of which differential billing is not adopted based on the room category.
+      - id: associated_expenses_definition
+        heading: "Definition: Associated Medical Expenses"
+        quote: >-
+          If Policy Holder chooses a higher room category above the eligibility defined in
+          policy, then proportionate deduction will apply on the Associated Medical Expenses in
+          addition to the difference in room rent. Such associated medical expenses do not
+          include Cost of pharmacy and consumables, Cost of implants and medical devices and
+          Cost of diagnostics.
+      - id: subsumed_into_room_charges
+        heading: "ITEMS THAT ARE TO BE SUBSUMED INTO ROOM CHARGES"
+        quote: ITEMS THAT ARE TO BE SUBSUMED INTO ROOM CHARGES
+        facts: "Listed items include 27 ADMISSION KIT and 29 DOCUMENTATION CHARGES / ADMINISTRATIVE EXPENSES. Separate lists exist for items subsumed into procedure charges and into costs of treatment."
+      - id: excl01_ped
+        heading: "Pre-Existing Diseases - Code Excl 01"
+        quote: >-
+          Expenses related to the treatment of a pre-existing Disease (PED) and its direct
+          complications shall be excluded until the expiry of 48 months of continuous coverage
+          after the date of inception of the first policy with insurer
+        superseded_by: IPR24-PED36
+      - id: moratorium_condition12
+        heading: "12. Moratorium Period"
+        quote: >-
+          After completion of eight continuous years under the policy no look back to be
+          applied. This period of eight years is called as moratorium period.
+        superseded_by: MC24-13
+
+  hdfc_optima_secure:
+    file: data/myoptima-secure---cis-pww.pdf
+    product: my:Optima Secure
+    anchors: []
+
+  niva_reassure2:
+    file: data/Reassure-2-0-Policy.pdf
+    product: ReAssure 2.0
+    note: Two-page document; likely a summary, not the full policy wording.
+    anchors: []

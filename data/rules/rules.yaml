@@ -1,0 +1,362 @@
+# Regulatory rule base for the claim-contest agent (27 rules, all checked verbatim against the PDFs in data/).
+# `text` is verbatim from the source PDF (whitespace normalised). The agent may only cite
+# rules with `verified: true`; unverified rules are shown as "needs verification".
+# `page` is the PDF page number. Matching must normalise whitespace, curly quotes,
+# hyphenated line breaks ("non- disclosure") and the amendment markers "1 [" / "]" in OMB17.
+
+documents:
+  MC24:
+    title: Master Circular on IRDAI (Insurance Products) Regulations 2024 - Health Insurance
+    reference: IRDAI/HLT/CIR/PRO/84/5/2024
+    date: 2024-05-29
+    file: "data/स्वास्थ्य बीमा व्यवसाय पर मास्टर परिपत्र _ Master Circular on Health Insurance Business 29052024.pdf"
+  OMB17:
+    title: Insurance Ombudsman Rules, 2017 (as amended till 09.11.2023)
+    file: "data/Insurance Ombudsman Rules, 2017( as amended till 09.11.2023).pdf"
+  IPR24:
+    title: IRDAI (Insurance Products) Regulations, 2024 - Schedule III (Health)
+    file: data/IRDAI--Insurance-Products--Regulations--2024.pdf
+  PPI24:
+    title: Master Circular on Protection of Policyholders' Interests, Part B (Health Insurance Policies)
+    reference: IRDAI/PP&GR/CIR/MISC/117/9/2024
+    date: 2024-09-05
+    file: data/MC_Protection_of_Policyholders_interests_2024.pdf
+  MC24_ANNEX:
+    title: Annexure to Master Circular on Health Insurance Business 29.05.2024 (Annexure-6 lists repealed circulars)
+    file: "data/6. Annexure to Master Circular on Health Insurance Business 29052024.pdf"
+
+rules:
+  - id: MC24-13
+    doc: MC24
+    para: "13"
+    page: 23
+    verified: true
+    ground: moratorium
+    text: >-
+      No policy and claim of health insurance shall be contestable on any grounds of
+      non-disclosure and/or misrepresentation except for established fraud, after the
+      completion of the Moratorium Period, i.e. 60 months of continuous coverage
+    test: Continuous coverage before the claim is at least 60 months and the insurer alleges non-disclosure or misrepresentation without established fraud.
+    overrides_policy: true
+
+  - id: MC24-15b
+    doc: MC24
+    para: "15(b)"
+    page: 23
+    verified: true
+    ground: cashless_tat
+    text: >-
+      Insurer shall decide on the request for cashless authorization immediately but not more
+      than one hour of receipt of request.
+    test: Time from cashless request to decision exceeds 60 minutes.
+    limit_minutes: 60
+
+  - id: MC24-16a
+    doc: MC24
+    para: "16(a)"
+    page: 23
+    verified: true
+    ground: discharge_tat
+    text: >-
+      Insurer shall grant final authorization within three hours of the receipt of discharge
+      authorization request from the hospital. In no case, the policyholder shall be made to
+      wait to be discharged from the Hospital.
+    test: Time from discharge authorisation request to final authorisation exceeds 180 minutes.
+    limit_minutes: 180
+
+  - id: MC24-16b
+    doc: MC24
+    para: "16(b)"
+    page: 23
+    verified: true
+    ground: discharge_tat
+    text: >-
+      If there is any delay beyond three hours, the additional amount if any charged by the
+      hospital shall be borne by the insurer from shareholder's fund.
+    test: Discharge authorisation exceeded 180 minutes and the hospital charged extra for the delay period; any deduction of those charges is contestable.
+
+  - id: MC24-17a
+    doc: MC24
+    para: "17(a)"
+    page: 23
+    verified: true
+    ground: repudiation_process
+    text: >-
+      No claim shall be repudiated without the approval of PMC or a three-member sub-group of
+      PMC called the Claims Review Committee (CRC).
+    test: A full repudiation; ask the insurer to confirm CRC approval.
+
+  - id: MC24-17b
+    doc: MC24
+    para: "17(b)"
+    page: 24
+    verified: true
+    ground: letter_specificity
+    text: >-
+      In case, the claim is repudiated or disallowed partially, details shall be conveyed to
+      the claimant along with full details giving reference to the specific terms and
+      conditions of the policy document.
+    test: The settlement or rejection letter cites "policy terms" without a specific clause.
+
+  - id: MC24-17c
+    doc: MC24
+    para: "17(c)"
+    page: 24
+    verified: true
+    ground: documents
+    text: >-
+      Pursuant to intimation of the claim, Insurers and Third Party Administrators (TPAs) shall
+      collect the required documents from the Hospitals. Policyholder shall not be required to
+      submit the documents.
+    test: The claim is held or closed because the policyholder did not submit hospital documents.
+
+  - id: MC24-19
+    doc: MC24
+    para: "19"
+    page: 24
+    verified: true
+    ground: grievance
+    text: >-
+      The response letter of the Insurer in any grievance shall include the contact details of
+      concerned insurance ombudsmen where his/her complaint can be escalated in case, the
+      policyholder is not satisfied by the grievance redressal provided by the Insurer.
+    test: The insurer's grievance reply omits Ombudsman contact details.
+
+  - id: MC24-20
+    doc: MC24
+    para: "20"
+    page: 24
+    verified: true
+    ground: ombudsman_compliance
+    text: >-
+      The Insurer is required to comply with the award of the Insurance Ombudsman within 30
+      days of receipt of award by the Insurer. In case the Insurer does not honour the
+      ombudsman award, a penalty of Rs. 5000/- per day shall be payable to the complainant.
+    test: More than 30 days since the insurer received an Ombudsman award without compliance.
+
+  - id: OMB17-14-3a
+    doc: OMB17
+    para: "14(3)(a)"
+    page: 9
+    verified: true
+    ground: escalation
+    text: >-
+      No complaint to the Insurance Ombudsman shall lie unless (a) the complainant has made a
+      representation in writing or through electronic mail or online through website of the
+      insurer or insurance broker concerned named in the complaint and— (i) either the insurer
+      or insurance broker, as the case may be, had rejected the complaint; or (ii) the
+      complainant had not received any reply within a period of one month after the insurer or
+      insurance broker, as the case may be, received his representation; or (iii) the
+      complainant is not satisfied with the reply given to him by the insurer or insurance
+      broker, as the case may be.
+    test: Escalation order - written grievance to the insurer first, then the Ombudsman after rejection, no reply within one month, or an unsatisfactory reply.
+
+  - id: OMB17-14-3b
+    doc: OMB17
+    para: "14(3)(b)"
+    page: 9
+    verified: true
+    ground: escalation
+    text: >-
+      The complaint is made within one year— (i) after the order of the insurer or insurance
+      broker, as the case may be, rejecting the representation is received; or (ii) after
+      receipt of decision of the insurer or insurance broker, as the case may be, which is not to the satisfaction
+      of the complainant; (iii) after expiry of a period of one month from the date of sending
+      the written representation to the insurer or insurance broker, as the case may be, if
+      the insurer or insurance broker, as the case may be, named fails to furnish reply to the
+      complainant.
+    test: Deadline for the Ombudsman complaint.
+
+  - id: OMB17-17-3
+    doc: OMB17
+    para: "17(3) proviso (ii)"
+    page: 11
+    verified: true
+    ground: escalation
+    text: >-
+      not award compensation exceeding rupees fifty lakhs (including relevant expenses, if any).
+    test: Amount in dispute must not exceed Rs 50 lakh for the Ombudsman route.
+
+  - id: OMB17-17-4
+    doc: OMB17
+    para: "17(4)"
+    page: 11
+    verified: true
+    ground: escalation
+    text: >-
+      The Ombudsman shall finalise its findings and pass an award within a period of three
+      months of the receipt of all requirements from the complainant.
+    test: Expected timeline after filing.
+
+  - id: OMB17-17-6
+    doc: OMB17
+    para: "17(6)"
+    page: 11
+    verified: true
+    ground: ombudsman_compliance
+    text: >-
+      The insurer or insurance broker, as the case may be, shall comply with the award within
+      thirty days of the receipt of the award and intimate compliance of the same to the
+      Ombudsman
+    test: Insurer compliance deadline after an award.
+
+  - id: IPR24-PED36
+    doc: IPR24
+    para: "Schedule III, 7"
+    page: 37
+    verified: true
+    ground: ped_waiting
+    text: >-
+      Waiting period for pre-existing diseases disclosed by the persons to be insured, shall
+      be maximum up to 36 months of continuous coverage under the Health Insurance policy.
+    test: A policy imposes, or a rejection relies on, a pre-existing disease waiting period longer than 36 months.
+    overrides_policy: true
+
+  - id: PPI24-B-V-1-ii
+    doc: PPI24
+    para: "Part B, V(1)(ii)"
+    page: 30
+    verified: true
+    ground: documents
+    text: >-
+      No claim shall be rejected or closed for want of documents or for delayed intimation of
+      claim.
+    test: The claim was rejected or closed because documents were missing or the claim was intimated late.
+
+  - id: PPI24-B-V-2-ii
+    doc: PPI24
+    para: "Part B, V(2)(ii)"
+    page: 30
+    verified: true
+    ground: settlement_interest
+    text: >-
+      In case the claim is not settled within the specified timelines, then the claimant is
+      entitled for interest at bank rate plus 2 percent from the date of receipt of intimation
+      to till the date of payment. Such interest shall be suo-moto paid by the insurers.
+    test: Settlement happened after the specified timeline; interest at bank rate + 2% is owed without asking.
+
+  - id: PPI24-B-V-3iii-6
+    doc: PPI24
+    para: "Part B, V(3)(iii)(6)"
+    page: 31
+    verified: true
+    ground: settlement_tat
+    text: >-
+      Settlement of claims (other than cashless) shall be settled within fifteen days from
+      submission of claim.
+    test: A reimbursement claim was not settled within 15 days of submission.
+    limit_days: 15
+
+  - id: PPI24-B-V-5
+    doc: PPI24
+    para: "Part B, V(5)(1)"
+    page: 32
+    verified: true
+    ground: multiple_policies
+    text: >-
+      If a policyholder has more than one health insurance policy from different insurers
+      he/she can file for claim settlement as per his/her choice under any policy.
+    test: The insurer refused or delayed because another policy exists, or insisted on the order of claiming.
+
+  - id: PPI24-B-IV-5-ii
+    doc: PPI24
+    para: "Part B, IV(5)(ii)"
+    page: 29
+    verified: true
+    ground: renewal
+    text: >-
+      An Insurer shall not deny the renewal on the ground that the policyholder had made a
+      claim (s) in the preceding policy years.
+    test: Renewal was refused or threatened because of past claims.
+
+  - id: PPI24-B-VI-2-i
+    doc: PPI24
+    para: "Part B, VI(2)(i)"
+    page: 33
+    verified: true
+    ground: grievance
+    text: >-
+      Insurers should provide resolution to the complaint within 14 days along with the
+      reasons for not accepting the complaint with specific reference to the relevant terms
+      and conditions of the policy.
+    test: The grievance was not resolved within 14 days, or the reply gave no specific policy reference.
+    limit_days: 14
+
+  - id: PPI24-B-VI-3-i
+    doc: PPI24
+    para: "Part B, VI(3)(i)"
+    page: 33
+    verified: true
+    ground: escalation
+    text: >-
+      In case the complainant is not satisfied with the resolution of grievance provided by
+      the insurer, they can escalate the unresolved / partially resolved complaints to
+      Insurance Ombudsman of concerned jurisdiction, in case the claim amount is up to Rs. 50
+      lakhs.
+    test: Escalation to the Ombudsman after an unsatisfactory grievance reply, for claims up to Rs 50 lakh.
+    source_note: The Part B copy on page 33 has OCR artefacts ("p .rovided", "com plaints"); identical wording is clean in Part A VI(3)(i), page 19. Quote verification must use fuzzy matching here.
+
+  - id: PPI24-B-VI-3-ii
+    doc: PPI24
+    para: "Part B, VI(3)(ii)"
+    page: 34
+    verified: true
+    ground: escalation
+    text: >-
+      The policyholder has option to take up the matter before insurance ombudsman of
+      competent jurisdiction without any charge/ fee
+    test: The Ombudsman route is free; no fee is payable.
+
+  - id: PPI24-B-VI-4-iv
+    doc: PPI24
+    para: "Part B, VI(4)(iv)"
+    page: 34
+    verified: true
+    ground: ombudsman_compliance
+    text: >-
+      This provision will not be applicable in case insurer chooses to appeal against the
+      award of the Insurance Ombudsman within 30days. In such case, due intimation shall be
+      sent to the Policyholder.
+    test: The Rs 5,000/day penalty does not apply if the insurer appeals the award within 30 days and informs the policyholder.
+
+  - id: IPR24-S3-1-6
+    doc: IPR24
+    para: "Schedule III, 1.6"
+    page: 36
+    verified: true
+    ground: ped_definition
+    text: >-
+      “Pre-existing disease (PED)” means any condition, ailment, injury or disease: a) that
+      is/are diagnosed by a physician not more than 36 months prior to the date of
+      commencement of the policy issued by the insurer; or b) for which medical advice or
+      treatment was recommended by, or received from, a physician, not more than 36 months
+      prior to the date of commencement of the policy.
+    test: The insurer calls a condition pre-existing although it was diagnosed or treated more than 36 months before the policy started.
+    overrides_policy: true
+
+  - id: IPR24-S3-1-7
+    doc: IPR24
+    para: "Schedule III, 1.7"
+    page: 36
+    verified: true
+    ground: specific_waiting
+    text: >-
+      “Specific waiting period” means a period up to 36 months from the commencement of a
+      health insurance policy during which period specified diseases/treatments (except due to
+      an accident) are not covered.
+    test: A specific-disease waiting period longer than 36 months, or applied to an accident.
+    overrides_policy: true
+
+  - id: IPR24-S3-8
+    doc: IPR24
+    para: "Schedule III, 8"
+    page: 37
+    verified: true
+    ground: moratorium
+    text: >-
+      After completion of sixty continuous months of coverage (including portability and
+      migration) in health insurance policy, no policy and claim shall be contestable by the
+      insurer on grounds of non-disclosure, misrepresentation, except on grounds of
+      established fraud.
+    test: Continuous coverage (including ported or migrated cover) of at least 60 months and a non-disclosure or misrepresentation ground without established fraud.
+    overrides_policy: true

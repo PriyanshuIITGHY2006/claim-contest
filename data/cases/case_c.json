@@ -1,0 +1,126 @@
+{
+  "case_id": "case_c",
+  "title": "Control: waiting period really not over",
+  "synthetic_notice": "SYNTHETIC - FOR TESTING. Fictional people, hospital and amounts.",
+  "policy": {
+    "doc_id": "star_fho_v19",
+    "file": "data/01-FHO-Insurance-policy-wordings.pdf",
+    "product": "Family Health Optima Insurance Plan",
+    "uin": "SHAHLIP23164V072223",
+    "version": "POL / FHO / V.19 / 2023",
+    "schedule": {
+      "sum_insured": 500000,
+      "inception_date": "2025-01-15",
+      "declared_conditions": [
+        "Type 2 diabetes (declared and accepted)"
+      ],
+      "eligible_room_rent_per_day": 5000
+    }
+  },
+  "patient": {
+    "name": "Prakash Das (fictional)",
+    "age": 54
+  },
+  "admission": {
+    "hospital": "Synthetic Care Hospital, Guwahati (SYN-0003)",
+    "admitted": "2026-08-10T08:00:00",
+    "discharged": "2026-08-13T10:00:00",
+    "diagnosis": "Diabetic foot ulcer - debridement",
+    "room_category": "Single standard AC room",
+    "cashless": false
+  },
+  "bill": {
+    "lines": [
+      {
+        "line_id": "L01",
+        "date": "2026-08-10",
+        "particulars": "Single standard AC room",
+        "category": "room",
+        "rate": 4000,
+        "units": 3,
+        "amount": 12000
+      },
+      {
+        "line_id": "L02",
+        "date": "2026-08-10",
+        "particulars": "Nursing charges",
+        "category": "nursing",
+        "rate": 1000,
+        "units": 3,
+        "amount": 3000
+      },
+      {
+        "line_id": "L03",
+        "date": "2026-08-11",
+        "particulars": "Surgeon fee",
+        "category": "professional_fee",
+        "rate": 30000,
+        "units": 1,
+        "amount": 30000
+      },
+      {
+        "line_id": "L04",
+        "date": "2026-08-11",
+        "particulars": "OT charges",
+        "category": "ot",
+        "rate": 18000,
+        "units": 1,
+        "amount": 18000
+      },
+      {
+        "line_id": "L05",
+        "date": "2026-08-10",
+        "particulars": "Pharmacy - medicines",
+        "category": "pharmacy",
+        "rate": 12500,
+        "units": 1,
+        "amount": 12500
+      },
+      {
+        "line_id": "L06",
+        "date": "2026-08-10",
+        "particulars": "Investigations",
+        "category": "diagnostics",
+        "rate": 5200,
+        "units": 1,
+        "amount": 5200
+      }
+    ],
+    "total": 80700
+  },
+  "settlement": {
+    "claimed": 80700,
+    "total_deducted": 80700,
+    "deductions": [
+      {
+        "deduction_id": "D1",
+        "label": "Claim repudiated",
+        "amount": 80700,
+        "line_ids": [
+          "L01",
+          "L02",
+          "L03",
+          "L04",
+          "L05",
+          "L06"
+        ],
+        "insurer_reason": "Treatment relates to declared pre-existing diabetes; waiting period of 48 months under Excl 01 not completed"
+      }
+    ],
+    "letter_text": "Your claim is repudiated under Code Excl 01: treatment of pre-existing disease (diabetes) is excluded until expiry of 48 months of continuous coverage.",
+    "approved": 0
+  },
+  "timeline": [],
+  "expected": [
+    {
+      "deduction_id": "D1",
+      "status": "valid",
+      "recoverable": 0,
+      "basis": [
+        "policy:excl01_ped",
+        "IPR24-PED36"
+      ],
+      "note": "18 months of cover; even the 36-month regulatory cap has not elapsed, so the rejection stands although the policy's 48 months is reduced to 36"
+    }
+  ]
+}

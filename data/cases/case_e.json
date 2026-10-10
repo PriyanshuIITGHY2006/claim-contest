@@ -1,0 +1,122 @@
+{
+  "case_id": "case_e",
+  "title": "Claim stuck: 'submit indoor case papers'",
+  "synthetic_notice": "SYNTHETIC - FOR TESTING. Fictional people, hospital and amounts.",
+  "policy": {
+    "doc_id": "hdfc_optima_secure",
+    "file": "data/myoptima-secure---cis-pww.pdf",
+    "product": "my:Optima Secure",
+    "uin": null,
+    "version": null,
+    "schedule": {
+      "sum_insured": 1000000,
+      "inception_date": "2020-11-01"
+    }
+  },
+  "patient": {
+    "name": "Rahul Baruah (fictional)",
+    "age": 29
+  },
+  "admission": {
+    "hospital": "Synthetic General Hospital, Guwahati (SYN-0005)",
+    "admitted": "2026-06-05T13:00:00",
+    "discharged": "2026-06-09T10:00:00",
+    "diagnosis": "Dengue fever with thrombocytopenia",
+    "room_category": "Twin sharing",
+    "cashless": true
+  },
+  "bill": {
+    "lines": [
+      {
+        "line_id": "L01",
+        "date": "2026-06-05",
+        "particulars": "Twin sharing room",
+        "category": "room",
+        "rate": 3500,
+        "units": 4,
+        "amount": 14000
+      },
+      {
+        "line_id": "L02",
+        "date": "2026-06-05",
+        "particulars": "Nursing charges",
+        "category": "nursing",
+        "rate": 900,
+        "units": 4,
+        "amount": 3600
+      },
+      {
+        "line_id": "L03",
+        "date": "2026-06-05",
+        "particulars": "Physician fees",
+        "category": "professional_fee",
+        "rate": 2000,
+        "units": 4,
+        "amount": 8000
+      },
+      {
+        "line_id": "L04",
+        "date": "2026-06-05",
+        "particulars": "Pharmacy - medicines",
+        "category": "pharmacy",
+        "rate": 17600,
+        "units": 1,
+        "amount": 17600
+      },
+      {
+        "line_id": "L05",
+        "date": "2026-06-05",
+        "particulars": "Investigations",
+        "category": "diagnostics",
+        "rate": 9800,
+        "units": 1,
+        "amount": 9800
+      },
+      {
+        "line_id": "L06",
+        "date": "2026-06-06",
+        "particulars": "Dengue platelet transfusion",
+        "category": "procedure",
+        "rate": 14000,
+        "units": 1,
+        "amount": 14000
+      }
+    ],
+    "total": 67000
+  },
+  "settlement": {
+    "claimed": 67000,
+    "total_deducted": 67000,
+    "deductions": [
+      {
+        "deduction_id": "D1",
+        "label": "Claim closed - documents pending",
+        "amount": 67000,
+        "line_ids": [
+          "L01",
+          "L02",
+          "L03",
+          "L04",
+          "L05",
+          "L06"
+        ],
+        "insurer_reason": "Indoor case papers and pharmacy bills not submitted by the insured"
+      }
+    ],
+    "letter_text": "Your claim has been closed as the following documents were not submitted by you: indoor case papers, itemised pharmacy bills.",
+    "approved": 0
+  },
+  "timeline": [],
+  "expected": [
+    {
+      "deduction_id": "D1",
+      "status": "contestable",
+      "recoverable": 67000,
+      "basis": [
+        "MC24-17c",
+        "PPI24-B-V-1-ii"
+      ],
+      "note": "Insurer/TPA must collect documents from the hospital after claim intimation; policyholder is not required to submit them"
+    }
+  ]
+}
